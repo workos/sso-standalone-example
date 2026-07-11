@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<h1>Webhook events</h1>
+
+<% if (!webhookConfigured) { %>
+  <p class="banner banner-warn">
+    <code>WORKOS_WEBHOOK_SECRET</code> is not set, so the webhook endpoint responds with
+    <code>501</code> and verifies nothing. See “Testing webhooks” in the README to wire it up.
+  </p>
+<% } %>
+
+<p class="muted">
+  Events received at <code>POST /webhooks</code> after their <code>WorkOS-Signature</code> header
+  verified. Held in memory only — restarting the server clears this list.
+</p>
+
+<% if (events.length === 0) { %>
+  <p class="empty">Nothing received yet. Make a change in a connected directory and it will show up here.</p>
+<% } else { %>
+  <ul class="event-list">
+    <% for (const event of events) { %>
+      <li>
+        <div class="event-summary">
+          <code><%= event.event %></code>
+          <code class="muted"><%= event.id %></code>
+          <span class="muted"><%= event.receivedAt %></span>
+        </div>
+        <details>
+          <summary>Payload</summary>
+          <pre><%= JSON.stringify(event.data, null, 2) %></pre>
+        </details>
+      </li>
+    <% } %>
+  </ul>
+<% } %>
+
+<%- include('partials/footer') %>

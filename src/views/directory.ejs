@@ -1,0 +1,78 @@
+<%- include('partials/header') %>
+
+<p class="breadcrumb"><a href="/organizations/<%= organization.id %>">← <%= organization.name %></a></p>
+
+<h1>Directory for <%= organization.name %></h1>
+
+<% if (!directory) { %>
+  <p class="empty">
+    No directory is connected to this organization yet. Go back and use
+    <strong>Set up Directory Sync</strong> to connect one through the Admin Portal.
+  </p>
+<% } else { %>
+  <p>
+    <strong><%= directory.name %></strong> <code><%= directory.type %></code>
+    <span class="badge badge-<%= directory.state === 'active' ? 'ok' : 'warn' %>"><%= directory.state %></span>
+  </p>
+
+  <% if (directories.length > 1) { %>
+    <p class="muted">
+      Other directories:
+      <% for (const candidate of directories) { %>
+        <% if (candidate.id !== directory.id) { %>
+          <a href="/organizations/<%= organization.id %>/directory?directory=<%= candidate.id %>"><%= candidate.name %></a>
+        <% } %>
+      <% } %>
+    </p>
+  <% } %>
+
+  <section>
+    <h2>Users</h2>
+    <% if (users.length === 0) { %>
+      <p class="empty">No users synced yet. Assign users to the directory in your IdP, or push one via SCIM.</p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>State</th><th>Groups</th></tr>
+        </thead>
+        <tbody>
+          <% for (const user of users) { %>
+            <tr>
+              <td><%= [user.firstName, user.lastName].filter(Boolean).join(' ') || '—' %></td>
+              <td><%= user.email ?? '—' %></td>
+              <td><span class="badge badge-<%= user.state === 'active' ? 'ok' : 'warn' %>"><%= user.state %></span></td>
+              <td><%= user.groups.map((group) => group.name).join(', ') || '—' %></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    <% } %>
+  </section>
+
+  <section>
+    <h2>Groups</h2>
+    <% if (groups.length === 0) { %>
+      <p class="empty">No groups synced yet.</p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>ID</th></tr>
+        </thead>
+        <tbody>
+          <% for (const group of groups) { %>
+            <tr>
+              <td><%= group.name %></td>
+              <td><code><%= group.id %></code></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    <% } %>
+  </section>
+
+  <% if (hasMore) { %>
+    <p class="muted">Showing the first page only — follow <code>listMetadata.after</code> to paginate.</p>
+  <% } %>
+<% } %>
+
+<%- include('partials/footer') %>

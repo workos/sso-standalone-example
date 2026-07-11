@@ -1,0 +1,48 @@
+<%- include('partials/header') %>
+
+<p class="breadcrumb"><a href="/">← All organizations</a></p>
+
+<h1><%= organization.name %></h1>
+<p><code><%= organization.id %></code></p>
+
+<div class="product-grid">
+  <section class="product-card">
+    <h2>Single Sign-On</h2>
+    <p>
+      Your customer's IT admin connects their identity provider through the Admin Portal. Once a
+      connection is active, anyone in the organization can sign in to this app with it.
+    </p>
+    <form method="post" action="/organizations/<%= organization.id %>/portal">
+      <input type="hidden" name="intent" value="sso" />
+      <button type="submit" class="secondary">Set up SSO (Admin Portal)</button>
+    </form>
+    <a class="button" href="/auth/sso/start?organization=<%= organization.id %>">Sign in with SSO</a>
+  </section>
+
+  <section class="product-card">
+    <h2>Directory Sync</h2>
+    <p>
+      The IT admin connects their directory (SCIM, Okta, Entra ID, Google, …) through the Admin
+      Portal, and WorkOS keeps users and groups in sync.
+    </p>
+    <form method="post" action="/organizations/<%= organization.id %>/portal">
+      <input type="hidden" name="intent" value="dsync" />
+      <button type="submit" class="secondary">Set up Directory Sync (Admin Portal)</button>
+    </form>
+    <a class="button" href="/organizations/<%= organization.id %>/directory">View synced users &amp; groups</a>
+    <% if (directories.length === 0) { %>
+      <p class="muted">No directory connected yet.</p>
+    <% } else { %>
+      <ul class="status-list">
+        <% for (const directory of directories) { %>
+          <li>
+            <%= directory.name %> <code><%= directory.type %></code>
+            <span class="badge badge-<%= directory.state === 'active' ? 'ok' : 'warn' %>"><%= directory.state %></span>
+          </li>
+        <% } %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<%- include('partials/footer') %>

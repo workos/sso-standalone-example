@@ -1,0 +1,36 @@
+<%- include('partials/header') %>
+
+<h1>Signed in via SSO</h1>
+<p>This profile came back from <code>workos.sso.getProfileAndToken()</code> and now lives in this app's own session.</p>
+
+<dl class="profile-fields">
+  <dt>Email</dt>
+  <dd><%= profile.email %></dd>
+  <dt>Name</dt>
+  <dd><%= [profile.firstName, profile.lastName].filter(Boolean).join(' ') || '—' %></dd>
+  <dt>Profile ID</dt>
+  <dd><code><%= profile.id %></code></dd>
+  <dt>Connection</dt>
+  <dd><code><%= profile.connectionId %></code> (<%= profile.connectionType %>)</dd>
+  <dt>Organization</dt>
+  <dd>
+    <% if (profile.organizationId) { %>
+      <a href="/organizations/<%= profile.organizationId %>"><code><%= profile.organizationId %></code></a>
+    <% } else { %>
+      —
+    <% } %>
+  </dd>
+  <dt>IdP ID</dt>
+  <dd><code><%= profile.idpId %></code></dd>
+</dl>
+
+<details>
+  <summary>Raw attributes from the IdP</summary>
+  <pre><%= JSON.stringify(profile.rawAttributes, null, 2) %></pre>
+</details>
+
+<form method="post" action="/auth/logout">
+  <button type="submit">Sign out</button>
+</form>
+
+<%- include('partials/footer') %>

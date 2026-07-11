@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<section class="intro">
+  <h1>Your B2B SaaS, enterprise-ready</h1>
+  <p>
+    This demo plays the part of a B2B SaaS app. Each organization below is one of your enterprise
+    customers. Create one, then hand its IT admin an Admin Portal link to connect single sign-on
+    and a user directory — no WorkOS dashboard access required on their side.
+  </p>
+</section>
+
+<section>
+  <h2>Organizations</h2>
+  <% if (organizations.length === 0) { %>
+    <p class="empty">No organizations yet. Create your first enterprise customer below.</p>
+  <% } else { %>
+    <ul class="card-list">
+      <% for (const organization of organizations) { %>
+        <li>
+          <a href="/organizations/<%= organization.id %>"><%= organization.name %></a>
+          <code><%= organization.id %></code>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
+</section>
+
+<section>
+  <h2>Create an organization</h2>
+  <form method="post" action="/organizations" class="stacked-form">
+    <label>
+      Name
+      <input name="name" required placeholder="Acme, Inc." />
+    </label>
+    <label>
+      Email domain <span class="muted">(optional)</span>
+      <input name="domain" placeholder="acme.com" />
+    </label>
+    <button type="submit">Create organization</button>
+  </form>
+</section>
+
+<%- include('partials/footer') %>

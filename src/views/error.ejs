@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+
+<h1><%= status %></h1>
+<p><%= message %></p>
+<% if (typeof hint === 'string' && hint) { %>
+  <p class="muted"><%= hint %></p>
+<% } %>
+<p><a href="/">← Back to organizations</a></p>
+
+<%- include('partials/footer') %>

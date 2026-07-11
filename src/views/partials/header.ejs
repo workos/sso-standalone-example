@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %> · WorkOS Node Enterprise Example</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav>
+        <a class="brand" href="/">Node Enterprise Example</a>
+        <div class="nav-links">
+          <a href="/webhooks">Webhook events</a>
+          <% if (profile) { %>
+            <a href="/profile"><%= profile.email %></a>
+          <% } %>
+        </div>
+      </nav>
+    </header>
+    <main>

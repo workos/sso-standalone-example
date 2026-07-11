@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "oxc/no-async-endpoint-handlers": "off"
+  },
+  "ignorePatterns": ["node_modules/"]
+}
