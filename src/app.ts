@@ -19,8 +19,13 @@ export function createApp(): express.Express {
 
   // Demo-only session setup: the default in-memory store loses sessions on
   // restart and doesn't scale past one process — use a shared store (e.g.
-  // connect-redis) in production, and set cookie.secure (plus
-  // app.set('trust proxy', 1) behind a proxy) once you're serving over HTTPS.
+  // connect-redis) in production. Secure (HTTPS-only) cookies switch on via
+  // NODE_ENV=production; trust proxy lets Express see the original protocol
+  // behind a TLS-terminating proxy so the cookie still gets set.
+  const isProduction = process.env.NODE_ENV === "production";
+  if (isProduction) {
+    app.set("trust proxy", 1);
+  }
   app.use(
     session({
       secret: config.sessionSecret,
@@ -28,6 +33,7 @@ export function createApp(): express.Express {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
+        secure: isProduction,
         // 'lax', not 'strict': the SSO callback arrives as a top-level GET
         // redirect from WorkOS, and 'strict' would drop the session cookie on
         // that navigation — breaking the state check.
