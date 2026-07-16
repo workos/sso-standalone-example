@@ -1,4 +1,4 @@
-# WorkOS standalone SSO + Directory Sync example (Node)
+# WorkOS standalone SSO + Directory Sync + Admin Portal example (Node)
 
 An example [Express](https://expressjs.com) + TypeScript app demonstrating **standalone Single Sign-On**, **Directory Sync**, and the **Admin Portal** with the [WorkOS Node SDK](https://github.com/workos/workos-node) — wired into a session the app owns, without AuthKit.
 
@@ -35,6 +35,8 @@ Do all of this in your **Staging** environment — it's free, and it includes te
 ## Configure and run
 
 ```sh
+git clone https://github.com/workos/sso-standalone-example.git
+cd sso-standalone-example
 cp .env.example .env   # then fill in the values
 npm install
 npm run dev

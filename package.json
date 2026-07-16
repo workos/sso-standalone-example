@@ -1,9 +1,14 @@
 {
-  "name": "node-enterprise-example",
+  "name": "sso-standalone-example",
   "version": "1.0.0",
   "private": true,
   "description": "Example Express + TypeScript app for WorkOS standalone SSO, Directory Sync, and the Admin Portal",
   "license": "MIT",
+  "author": "WorkOS",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/workos/sso-standalone-example.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
